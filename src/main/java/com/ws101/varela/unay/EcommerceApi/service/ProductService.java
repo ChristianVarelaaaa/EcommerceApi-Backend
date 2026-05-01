@@ -13,9 +13,25 @@ public class ProductService {
     private Long nextId = 1L;
 
     public ProductService() {
-        // Add sample data para may laman agad
-        productList.add(new Product(nextId++, "Laptop", 45000.0, 10));
-        productList.add(new Product(nextId++, "Mouse", 500.0, 50));
+        
+        productList.add(new Product(
+            nextId++, 
+            "Laptop", 
+            "High performance gaming laptop",  // description
+            45000.0, 
+            "Electronics",                     // category
+            10, 
+            "https://example.com/laptop.jpg"   // imageUrl
+        ));
+        productList.add(new Product(
+            nextId++, 
+            "Mouse", 
+            "Wireless optical mouse",          // description
+            500.0, 
+            "Accessories",                     // category
+            50, 
+            "https://example.com/mouse.jpg"    // imageUrl
+        ));
     }
 
     public List<Product> getAllProducts() {
