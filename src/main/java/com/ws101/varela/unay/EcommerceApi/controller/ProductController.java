@@ -8,53 +8,96 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/products")
+@RequestMapping("/api/v1/products") // Task 4.1: Map to /api/v1/products base path
 public class ProductController {
 
     @Autowired
     private ProductService productService;
 
-    // GET ALL - GET /api/products
+    // GET /api/v1/products - Return all products
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        List<Product> products = productService.getAllProducts();
-        return new ResponseEntity<>(products, HttpStatus.OK); // 200
+    public List<Product> getAllProducts() {
+        return productService.getAllProducts();
     }
 
-    // GET ONE - GET /api/products/{id}
+    // GET /api/v1/products/{id} - Return single product by ID
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
-        return productService.getProductById(id)
-                .map(product -> new ResponseEntity<>(product, HttpStatus.OK)) // 200
-                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // 404
+        Optional<Product> product = productService.getProductById(id);
+        return product.map(ResponseEntity::ok)
+                     .orElse(ResponseEntity.notFound().build());
     }
 
-    // CREATE - POST /api/products
+    // GET /api/v1/products/filter?filterType=category&filterValue=Electronics
+    @GetMapping("/filter")
+    public List<Product> filterProducts(
+            @RequestParam String filterType,
+            @RequestParam String filterValue) {
+
+        switch (filterType.toLowerCase()) {
+            case "category":
+                return productService.getProductsByCategory(filterValue);
+            case "name":
+                return productService.getProductsByName(filterValue);
+            case "price":
+                // Format: min-max e.g., 1000-5000
+                String[] range = filterValue.split("-");
+                double min = Double.parseDouble(range[0]);
+                double max = Double.parseDouble(range[1]);
+                return productService.getProductsByPriceRange(min, max);
+            default:
+                return productService.getAllProducts();
+        }
+    }
+
+    // POST /api/v1/products - Create new product
     @PostMapping
     public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        Product createdProduct = productService.createProduct(product);
-        return new ResponseEntity<>(createdProduct, HttpStatus.CREATED); // 201
+        Product created = productService.createProduct(product);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
-    // UPDATE - PUT /api/products/{id}
+    // PUT /api/v1/products/{id} - Replace entire product
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         Product updated = productService.updateProduct(id, product);
-        if (updated != null) {
-            return new ResponseEntity<>(updated, HttpStatus.OK); // 200
+        if (updated!= null) {
+            return ResponseEntity.ok(updated);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404
+        return ResponseEntity.notFound().build();
     }
 
-    // DELETE - DELETE /api/products/{id}
+    // PATCH /api/v1/products/{id} - Partially update product
+    @PatchMapping("/{id}")
+    public ResponseEntity<Product> partialUpdateProduct(@PathVariable Long id, @RequestBody Product productPatch) {
+        Optional<Product> existingProduct = productService.getProductById(id);
+        if (existingProduct.isPresent()) {
+            Product current = existingProduct.get();
+
+            // Update lang yung fields na hindi null
+            if (productPatch.getName()!= null) current.setName(productPatch.getName());
+            if (productPatch.getDescription()!= null) current.setDescription(productPatch.getDescription());
+            if (productPatch.getPrice()!= 0) current.setPrice(productPatch.getPrice());
+            if (productPatch.getCategory()!= null) current.setCategory(productPatch.getCategory());
+            if (productPatch.getStock()!= 0) current.setStock(productPatch.getStock());
+            if (productPatch.getImageUrl()!= null) current.setImageUrl(productPatch.getImageUrl());
+
+            Product updated = productService.updateProduct(id, current);
+            return ResponseEntity.ok(updated);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // DELETE /api/v1/products/{id} - Remove product
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         boolean deleted = productService.deleteProduct(id);
         if (deleted) {
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT); // 204
+            return ResponseEntity.noContent().build();
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 404
+        return ResponseEntity.notFound().build();
     }
 }
