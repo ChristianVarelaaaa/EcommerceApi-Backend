@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Products</title>
+</head>
+<body>
+    <h2>Products List</h2>
+    <button onclick="logout()">Logout</button>
+    <div id="products"></div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie!== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Load products pag open ng page
+        fetch('/api/v1/products')
+           .then(res => res.json())
+           .then(data => {
+                document.getElementById('products').innerHTML = JSON.stringify(data);
+            });
+
+        function logout() {
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+                }
+            }).then(() => {
+                window.location.href = '/login.html';
+            });
+        }
+    </script>
+</body>
+</html>
