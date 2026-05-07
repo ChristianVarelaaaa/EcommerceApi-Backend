@@ -2,43 +2,41 @@
 <html>
 <head>
     <title>Products</title>
+    <script src="solution.js"></script>
 </head>
 <body>
     <h2>Products List</h2>
-    <button onclick="logout()">Logout</button>
+    <form action="/logout" method="post">
+        <button type="submit">Logout</button>
+    </form>
+    <button onclick="createProduct()">Add Product - Admin/Seller Only</button>
     <div id="products"></div>
 
     <script>
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie!== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
+        // Check auth pag load ng page
+        checkAuth();
+
+        // Load products gamit apiGet
+        apiGet('/api/v1/products').then(data => {
+            if (data) {
+                document.getElementById('products').innerHTML = JSON.stringify(data, null, 2);
             }
-            return cookieValue;
-        }
+        });
 
-        // Load products pag open ng page
-        fetch('/api/v1/products')
-           .then(res => res.json())
-           .then(data => {
-                document.getElementById('products').innerHTML = JSON.stringify(data);
-            });
-
-        function logout() {
-            fetch('/logout', {
-                method: 'POST',
-                headers: {
-                    'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+        // Test 403 - dapat Access Denied pag ROLE_USER lang
+        function createProduct() {
+            apiPost('/api/v1/products', {
+                name: "Test Product",
+                description: "Test",
+                price: 100,
+                stock: 10
+            }).then(data => {
+                if (data) {
+                    alert('Product created!');
+                    location.reload();
                 }
-            }).then(() => {
-                window.location.href = '/login.html';
+            }).catch(err => {
+                console.log(err);
             });
         }
     </script>
