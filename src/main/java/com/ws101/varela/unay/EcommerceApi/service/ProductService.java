@@ -1,6 +1,5 @@
 package com.ws101.varela.unay.EcommerceApi.service;
 
-import jakarta.persistence.EntityNotFoundException;
 import com.ws101.varela.unay.EcommerceApi.model.Product;
 import com.ws101.varela.unay.EcommerceApi.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,7 @@ public class ProductService {
 
     public Product getProductById(Long id) {
         return productRepository.findById(id)
-               .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
+               .orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
 }
 
 
