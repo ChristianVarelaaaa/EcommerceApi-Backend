@@ -17,7 +17,7 @@ public class Product {
 
     private String description;
     private Double price;
-    private Integer stockQuantity; // DAPAT 'stockQuantity' para match sa Service
+    private Integer stockQuantity; 
     private String imageUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
