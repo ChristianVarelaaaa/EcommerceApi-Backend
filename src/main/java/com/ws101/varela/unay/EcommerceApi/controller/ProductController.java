@@ -1,7 +1,9 @@
 package com.ws101.varela.unay.EcommerceApi.controller;
 
+import com.ws101.varela.unay.EcommerceApi.dto.CreateProductDto;
 import com.ws101.varela.unay.EcommerceApi.model.Product;
 import com.ws101.varela.unay.EcommerceApi.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,34 +17,40 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // Public
     @GetMapping
     public List<Product> getAllProducts() {
         return productService.getAllProducts();
     }
 
-    // Public
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         Product product = productService.getProductById(id);
         return ResponseEntity.ok(product);
     }
 
-    // Seller/Admin
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
-    public Product createProduct(@RequestBody Product product) {
+    public Product createProduct(@Valid @RequestBody CreateProductDto productDto) {
+        // Convert DTO to Entity
+        Product product = new Product();
+        product.setName(productDto.getName());
+        product.setDescription(productDto.getDescription());
+        product.setPrice(productDto.getPrice());
+        product.setStock(productDto.getStock());
         return productService.createProduct(product);
     }
 
-    // Seller/Admin
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
-    public Product updateProduct(@PathVariable Long id, @RequestBody Product productDetails) {
+    public Product updateProduct(@PathVariable Long id, @Valid @RequestBody CreateProductDto productDto) {
+        Product productDetails = new Product();
+        productDetails.setName(productDto.getName());
+        productDetails.setDescription(productDto.getDescription());
+        productDetails.setPrice(productDto.getPrice());
+        productDetails.setStock(productDto.getStock());
         return productService.updateProduct(id, productDetails);
     }
 
-    // Admin only
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
@@ -50,7 +58,6 @@ public class ProductController {
         return ResponseEntity.ok().build();
     }
 
-    // Public
     @GetMapping("/filter")
     public List<Product> filterProducts(
         @RequestParam String filterType,
