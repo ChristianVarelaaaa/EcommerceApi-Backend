@@ -1,13 +1,17 @@
 package com.ws101.varela.unay.EcommerceApi.model;
 
+import java.util.List;
+import java.util.ArrayList;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "categories")
 @Getter @Setter
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class Category {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,4 +20,7 @@ public class Category {
     private String name;
 
     private String description;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Product> products = new ArrayList<>();
 }
