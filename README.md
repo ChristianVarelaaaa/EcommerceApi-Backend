@@ -14,7 +14,29 @@ A RESTful API for product management built with Spring Boot. Supports full CRUD 
 
 
 
-   
+//LAB 8
+
+## Database Schema
+- **Table: products**
+    - id: INT, PRIMARY KEY, AUTO_INCREMENT
+    - name: VARCHAR(255)
+    - price: DECIMAL(10,2)
+    - description: TEXT
+
+
+## API Endpoints
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | /api/products | Get all products from database |
+| POST | /api/products | Add new product |
+| GET | /api/products/{id} | Get product by ID |
+
+## Screenshots
+### Database Table
+![Database Table](docs/screenshots/db-table.png)
+
+### Browser Console - Successful Fetch
+![Console Fetch](docs/screenshots/console-fetch.png)
 
 //BAGO LAB 9
 # EcommerceApi - Session-Based Authentication
