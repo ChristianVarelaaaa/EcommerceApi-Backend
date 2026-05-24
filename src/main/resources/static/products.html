@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+    <script src="/solution.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h2 {
+            color: #333;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        .product-card {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .product-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .product-card p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .price {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e91e63 !important;
+        }
+        .empty-state, .error-state, .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Products List</h2>
+        <form action="/logout" method="post" style="display:inline;">
+            <button type="submit" class="btn-danger">Logout</button>
+        </form>
+    </div>
+
+    <button class="btn-primary" onclick="createProduct()">
+        Add Product - Admin/Seller Only
+    </button>
+
+    <div id="products">
+        <div class="loading">Loading products...</div>
+    </div>
+
+    <script>
+        // Check auth pag load ng page
+        checkAuth();
+
+        // Load products gamit apiGet
+        fetchProducts();
+
+        async function fetchProducts() {
+            try {
+                const data = await apiGet('/api/v1/products');
+                
+                if (!data || data.length === 0) {
+                    document.getElementById('products').innerHTML = 
+                        '<div class="empty-state"><p>No products found. Add one above if you are Admin/Seller.</p></div>';
+                    return;
+                }
+                
+                renderProducts(data);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('products').innerHTML = 
+                    '<div class="error-state"><p style="color:red;">Error loading products: ' + err.message + '</p></div>';
+            }
+        }
+
+        function renderProducts(products) {
+            const html = products.map(p => `
+                <div class="product-card">
+                    <h3>${p.name}</h3>
+                    <p>${p.description || 'No description'}</p>
+                    <p class="price">₱${p.price}</p>
+                    <p><strong>Stock:</strong> ${p.stockQuantity}</p>
+                </div>
+            `).join('');
+            
+            document.getElementById('products').innerHTML = html;
+        }
+
+        // Test 403 - dapat Access Denied pag ROLE_USER lang
+        function createProduct() {
+            apiPost('/api/v1/products', {
+                name: "Test Product",
+                description: "Test Description",
+                price: 100,
+                stockQuantity: 10
+            }).then(data => {
+                if (data) {
+                    alert('Product created!');
+                    location.reload();
+                }
+            }).catch(err => {
+                console.log(err);
+                alert('Error: ' + err.message);
+            });
+        }
+    </script>
+</body>
+</html>

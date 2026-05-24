@@ -1,24 +1,33 @@
 package com.ws101.varela.unay.EcommerceApi.model;
 
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.EqualsAndHashCode;
+import jakarta.persistence.*;
+import lombok.*;
 
-@Getter              // Para sa getters
-@Setter              // Para sa setters
-@ToString            // Para sa toString() method
-@EqualsAndHashCode   // Para sa equals() at hashCode()
-@AllArgsConstructor  // Constructor with all fields
-@NoArgsConstructor   // Empty constructor
+@Entity
+@Table(name = "products")
+@Getter @Setter
+@NoArgsConstructor @AllArgsConstructor
 public class Product {
-    private Long id;              // Unique identifier (ID)
-    private String name;          // Product name
-    private String description;   // Description
-    private double price;         // Price
-    private String category;      // Category
-    private int stock;            // Stock quantity
-    private String imageUrl;      // Image URL (optional)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    private String description;
+    private Double price;
+    private Integer stockQuantity; 
+    private Integer stock;
+    private String imageUrl;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    public Integer getStock() { return stock; }
+    public void setStock(Integer stock) { this.stock = stock; }
 }
+
+
+
