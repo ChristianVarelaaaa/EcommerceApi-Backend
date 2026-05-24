@@ -1,73 +1,120 @@
-// Global fetch wrapper para mahuli yung 401/403
+const API_BASE = 'http://localhost:8080';
+
+// Kunin token sa localStorage
+function getToken() {
+  return localStorage.getItem('jwt_token');
+}
+
+// Global fetch wrapper
 async function apiFetch(url, options = {}) {
-    // Default options
-    const defaultOptions = {
-        credentials: 'include', // Important para masama yung JSESSIONID cookie
-        headers: {
-            'Content-Type': 'application/json',
-            ...options.headers
-        },
-        ...options
-    };
+  const fullUrl = API_BASE + url;
+  const token = getToken();
 
-    try {
-        const response = await fetch(url, defaultOptions);
+  const defaultOptions = {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    ...options
+  };
 
-        // 401 Unauthorized - hindi naka login or expired session
-        if (response.status === 401) {
-            alert('Session expired. Please login again.');
-            window.location.href = '/login.html';
-            return null;
-        }
+  // Lagay token sa header kung meron
+  if (token) {
+    defaultOptions.headers['Authorization'] = 'Bearer ' + token;
+  }
 
-        // 403 Forbidden - naka login pero walang permission
-        if (response.status === 403) {
-            alert('Access Denied. You do not have permission to access this resource.');
-            return null;
-        }
+  try {
+    const response = await fetch(fullUrl, defaultOptions);
 
-        // Check if response is ok
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || 'Request failed');
-        }
-
-        return response;
-
-    } catch (error) {
-        console.error('API Error:', error);
-        throw error;
+    if (response.status === 401) {
+      alert('Session expired. Please login again.');
+      localStorage.removeItem('jwt_token');
+      window.location.href = '/login.html';
+      return null;
     }
+
+    if (response.status === 403) {
+      alert('Access Denied. You do not have permission.');
+      return null;
+    }
+
+    if (!response.ok) {
+      let errorData = { error: 'Request failed' };
+      try {
+        errorData = await response.json();
+      } catch (e) {}
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error('API Error:', error);
+    throw error;
+  }
 }
 
-// Helper function para sa GET requests
+// Helper GET
 async function apiGet(url) {
-    const response = await apiFetch(url);
-    if (response) return response.json();
-    return null;
+  const response = await apiFetch(url);
+  if (response) return response.json();
+  return null;
 }
 
-// Helper function para sa POST requests
+// Helper POST
 async function apiPost(url, data) {
-    const response = await apiFetch(url, {
-        method: 'POST',
-        body: JSON.stringify(data)
-    });
-    if (response) return response.json();
-    return null;
+  const response = await apiFetch(url, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+  if (response) return response.json();
+  return null;
 }
 
-// Helper para check kung logged in ba
+// Login function - i-save token
+async function login(username, password) {
+  const res = await fetch(API_BASE + '/api/v1/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  });
+
+  if (!res.ok) {
+    alert('Invalid username or password');
+    return false;
+  }
+
+  const data = await res.json();
+  localStorage.setItem('jwt_token', data.token);
+  window.location.href = '/dashboard.html';
+  return true;
+}
+
+// Logout
+function logout() {
+  localStorage.removeItem('jwt_token');
+  window.location.href = '/login.html';
+}
+
+// Check kung logged in
 async function checkAuth() {
-    try {
-        const res = await fetch('/api/v1/auth/check', {credentials: 'include'});
-        if (res.status === 401) {
-            window.location.href = '/login.html';
-            return false;
-        }
-        return true;
-    } catch (e) {
-        window.location.href = '/login.html';
-        return false;
+  const token = getToken();
+  if (!token) {
+    window.location.href = '/login.html';
+    return false;
+  }
+
+  try {
+    const res = await fetch(API_BASE + '/api/v1/auth/check', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    
+    if (res.status === 401) {
+      logout();
+      return false;
     }
+    return true;
+  } catch (e) {
+    logout();
+    return false;
+  }
 }

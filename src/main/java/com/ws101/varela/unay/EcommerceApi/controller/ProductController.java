@@ -29,14 +29,14 @@ public class ProductController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SELLER')")
     public Product createProduct(@Valid @RequestBody CreateProductDto productDto) {
         // Convert DTO to Entity
         Product product = new Product();
         product.setName(productDto.getName());
         product.setDescription(productDto.getDescription());
         product.setPrice(productDto.getPrice());
-        product.setStock(productDto.getStock());
+        product.setStockQuantity(productDto.getStockQuantity());
         return productService.createProduct(product);
     }
 
@@ -47,7 +47,7 @@ public class ProductController {
         productDetails.setName(productDto.getName());
         productDetails.setDescription(productDto.getDescription());
         productDetails.setPrice(productDto.getPrice());
-        productDetails.setStock(productDto.getStock());
+        productDetails.setStockQuantity(productDto.getStockQuantity());
         return productService.updateProduct(id, productDetails);
     }
 

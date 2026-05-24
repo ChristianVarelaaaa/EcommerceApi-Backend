@@ -85,60 +85,62 @@
     </div>
 
     <script>
-        // Check auth pag load ng page
-        checkAuth();
+                    // Load products pag ready na ang page
+            document.addEventListener('DOMContentLoaded', async () => {
+            const isAuth = await checkAuth();
+            if (isAuth) {
+                fetchProducts();
+            }
+            });
 
-        // Load products gamit apiGet
-        fetchProducts();
-
-        async function fetchProducts() {
+            async function fetchProducts() {
             try {
                 const data = await apiGet('/api/v1/products');
                 
                 if (!data || data.length === 0) {
-                    document.getElementById('products').innerHTML = 
-                        '<div class="empty-state"><p>No products found. Add one above if you are Admin/Seller.</p></div>';
-                    return;
+                document.getElementById('products').innerHTML = 
+                    '<div class="empty-state"><p>No products found. Add one above if you are Admin/Seller.</p></div>';
+                return;
                 }
                 
                 renderProducts(data);
             } catch (err) {
                 console.error(err);
                 document.getElementById('products').innerHTML = 
-                    '<div class="error-state"><p style="color:red;">Error loading products: ' + err.message + '</p></div>';
+                '<div class="error-state"><p style="color:red;">Error loading products: ' + err.message + '</p></div>';
             }
-        }
+            }
 
-        function renderProducts(products) {
+            function renderProducts(products) {
             const html = products.map(p => `
                 <div class="product-card">
-                    <h3>${p.name}</h3>
-                    <p>${p.description || 'No description'}</p>
-                    <p class="price">₱${p.price}</p>
-                    <p><strong>Stock:</strong> ${p.stockQuantity}</p>
+                <h3>${p.name}</h3>
+                <p>${p.description || 'No description'}</p>
+                <p class="price">₱${p.price}</p>
+                <p><strong>Stock:</strong> ${p.stockQuantity}</p>
                 </div>
             `).join('');
-            
             document.getElementById('products').innerHTML = html;
-        }
+            }
 
-        // Test 403 - dapat Access Denied pag ROLE_USER lang
-        function createProduct() {
-            apiPost('/api/v1/products', {
+            // Test 403 - dapat Access Denied pag ROLE_USER lang
+            async function createProduct() {
+            try {
+                const data = await apiPost('/api/v1/products', {
                 name: "Test Product",
                 description: "Test Description",
                 price: 100,
                 stockQuantity: 10
-            }).then(data => {
+                });
                 if (data) {
-                    alert('Product created!');
-                    location.reload();
+                alert('Product created!');
+                location.reload();
                 }
-            }).catch(err => {
+            } catch (err) {
                 console.log(err);
                 alert('Error: ' + err.message);
-            });
-        }
+            }
+            }
     </script>
 </body>
 </html>

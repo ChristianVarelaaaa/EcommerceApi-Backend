@@ -1,41 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Login</title>
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; }
+    input, button { width: 100%; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+    button { background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .error { color: red; margin-top: 10px; }
+  </style>
 </head>
 <body>
-    <h2>Login</h2>
-    <form action="/login" method="post">
-        <input type="hidden" name="_csrf" id="csrf">
+  <h2>Login</h2>
+  <form id="loginForm">
+    <label>Username:</label>
+    <input type="text" id="username" required>
+    
+    <label>Password:</label>
+    <input type="password" id="password" required>
+    
+    <button type="submit">Login</button>
+    <div id="error" class="error"></div>
+  </form>
 
-        <label>Username:</label>
-        <input type="text" name="username" required><br><br>
+  <script>
+    const API_BASE = 'http://localhost:8080';
 
-        <label>Password:</label>
-        <input type="password" name="password" required><br><br>
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = '';
 
-        <button type="submit">Login</button>
-    </form>
+      try {
+        const res = await fetch(API_BASE + '/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
-    <script>
-        // Kunin CSRF token from cookie
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie!== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
+        if (!res.ok) {
+          errorDiv.textContent = 'Invalid username or password';
+          return;
         }
 
-        // Set mo sa hidden input
-        document.getElementById('csrf').value = getCookie('XSRF-TOKEN');
-    </script>
+        const data = await res.json();
+        
+        // Save token sa localStorage
+        localStorage.setItem('jwt_token', data.token);
+        
+        // Redirect pag successful
+        window.location.href = '/dashboard.html';
+        
+      } catch (err) {
+        errorDiv.textContent = 'Server error. Try again.';
+        console.error(err);
+      }
+    });
+  </script>
 </body>
 </html>

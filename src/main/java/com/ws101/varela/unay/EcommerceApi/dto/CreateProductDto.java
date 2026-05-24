@@ -19,9 +19,9 @@ public class CreateProductDto {
     @Positive(message = "Price must be greater than 0")
     private Double price;
 
-    @NotNull(message = "Stock is required")
+    @NotNull(message = "Stock quantity is required")
     @Positive(message = "Stock must be positive")
-    private Integer stock;
+    private Integer stockQuantity;
 
     // Getters and Setters
     public String getName() { return name; }
@@ -30,6 +30,6 @@ public class CreateProductDto {
     public void setDescription(String description) { this.description = description; }
     public Double getPrice() { return price; }
     public void setPrice(Double price) { this.price = price; }
-    public Integer getStock() { return stock; }
-    public void setStock(Integer stock) { this.stock = stock; }
+    public Integer getStockQuantity() { return stockQuantity; }
+    public void setStockQuantity(Integer stockQuantity) { this.stockQuantity = stockQuantity; }
 }
