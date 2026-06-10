@@ -1,3 +1,6 @@
+Pair: Varela, Christian Jr. A. & Unay, Edmer R. - BSIT 2-D
+
+
 # EcommerceApi - Product CRUD API
 Lab 7 - WS101 | Varela Unay
 
